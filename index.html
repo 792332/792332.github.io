@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>规划抽水蓄能电站参数计算软件</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+        }
+        body {
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+        .calc-box {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        .input-area, .result-area {
+            flex: 1;
+            min-width: 400px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+        }
+        .input-area h2, .result-area h2 {
+            color: #34495e;
+            margin-bottom: 20px;
+            font-size: 18px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        .result-item {
+            margin-bottom: 12px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        .result-item h3 {
+            color: #2c3e50;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        .result-item p {
+            color: #34495e;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .table-result {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .table-result th, .table-result td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: center;
+        }
+        .table-result th {
+            background-color: #3498db;
+            color: #fff;
+            font-weight: 500;
+        }
+        .table-result tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .note {
+            color: #7f8c8d;
+            font-size: 12px;
+            margin-top: 5px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>规划抽水蓄能电站参数计算软件</h1>
+        <div class="calc-box">
+            <!-- 输入区域 -->
+            <div class="input-area">
+                <h2>基础参数输入（可修改）</h2>
+                <div class="form-group">
+                    <label for="unitNum">机组台数（台）</label>
+                    <input type="number" id="unitNum" value="4" min="1" max="10">
+                </div>
+                <div class="form-group">
+                    <label for="unitPower">单机容量（MW）</label>
+                    <input type="number" id="unitPower" value="300" min="100" max="500">
+                </div>
+                <div class="form-group">
+                    <label for="turbineEta">水轮机效率（η）</label>
+                    <input type="number" id="turbineEta" value="0.91" step="0.01" min="0.85" max="0.95">
+                    <p class="note">规划阶段参考值：0.85~0.95</p>
+                </div>
+                <div class="form-group">
+                    <label for="ratedHead">额定水头（m）</label>
+                    <input type="number" id="ratedHead" value="200" min="180" max="225">
+                    <p class="note">目标区间：180~225m（与响水涧、泰山同级别）</p>
+                </div>
+                <div class="form-group">
+                    <label for="generateHour">日发电小时数（h）</label>
+                    <input type="number" id="generateHour" value="6" min="4" max="8">
+                    <p class="note">日调节电站常规取值：4~8h</p>
+                </div>
+                <div class="form-group">
+                    <label for="headLoss">输水水头损失（%）</label>
+                    <input type="number" id="headLoss" value="5" min="3" max="8">
+                    <p class="note">规划阶段暂估：3%~8%</p>
+                </div>
+                <div class="form-group">
+                    <label for="tunnelVelocity">隧洞经济流速（m/s）</label>
+                    <input type="number" id="tunnelVelocity" value="4.0" step="0.1" min="3.8" max="4.2">
+                    <p class="note">参考规范取值：3.8~4.2m/s</p>
+                </div>
+                <div class="form-group">
+                    <label for="comprehensiveEta">综合效率（%）</label>
+                    <input type="number" id="comprehensiveEta" value="75" min="70" max="80">
+                    <p class="note">行业通用标准：70%~80%</p>
+                </div>
+                <div class="form-group">
+                    <label for="annualUseHour">年利用小时数（h）</label>
+                    <input type="number" id="annualUseHour" value="1000" min="800" max="1200">
+                </div>
+                <button class="btn" onclick="calculate()">开始计算</button>
+            </div>
+
+            <!-- 结果区域 -->
+            <div class="result-area">
+                <h2>计算结果（自动生成）</h2>
+                <div class="result-item">
+                    <h3>一、装机容量与流量参数</h3>
+                    <p>总装机容量：<span id="totalPower">--</span> MW</p>
+                    <p>单机额定流量：<span id="unitFlow">--</span> m³/s</p>
+                    <p>总发电流量：<span id="totalFlow">--</span> m³/s</p>
+                </div>
+
+                <div class="result-item">
+                    <h3>二、水库参数</h3>
+                    <table class="table-result">
+                        <tr>
+                            <th>参数名称</th>
+                            <th>上水库</th>
+                            <th>下水库</th>
+                            <th>备注</th>
+                        </tr>
+                        <tr>
+                            <td>有效库容（万m³）</td>
+                            <td id="upperEffective">--</td>
+                            <td id="lowerEffective">--</td>
+                            <td>日调节，对称配置</td>
+                        </tr>
+                        <tr>
+                            <td>总库容（万m³）</td>
+                            <td id="upperTotal">--</td>
+                            <td id="lowerTotal">--</td>
+                            <td>规划阶段估算</td>
+                        </tr>
+                        <tr>
+                            <td>正常蓄水位（m）</td>
+                            <td id="upperNormal">--</td>
+                            <td id="lowerNormal">--</td>
+                            <td>1985国家高程</td>
+                        </tr>
+                        <tr>
+                            <td>死水位（m）</td>
+                            <td id="upperDead">--</td>
+                            <td id="lowerDead">--</td>
+                            <td>确保有效库容</td>
+                        </tr>
+                        <tr>
+                            <td>最大坝高（m）</td>
+                            <td id="upperDam">--</td>
+                            <td id="lowerDam">--</td>
+                            <td>上库沥青面板堆石坝</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="result-item">
+                    <h3>三、输水系统参数</h3>
+                    <table class="table-result">
+                        <tr>
+                            <th>参数名称</th>
+                            <th>数值</th>
+                            <th>备注</th>
+                        </tr>
+                        <tr>
+                            <td>额定水头（m）</td>
+                            <td id="calRatedHead">--</td>
+                            <td>设计目标值</td>
+                        </tr>
+                        <tr>
+                            <td>最大发电水头（m）</td>
+                            <td id="maxHead">--</td>
+                            <td>扣损后取整</td>
+                        </tr>
+                        <tr>
+                            <td>最小发电水头（m）</td>
+                            <td id="minHead">--</td>
+                            <td>扣损后取整</td>
+                        </tr>
+                        <tr>
+                            <td>输水主洞直径（m）</td>
+                            <td id="mainTunnel">--</td>
+                            <td>一洞四机布置</td>
+                        </tr>
+                        <tr>
+                            <td>输水支管直径（m）</td>
+                            <td id="branchTunnel">--</td>
+                            <td>对应单机流量</td>
+                        </tr>
+                        <tr>
+                            <td>输水系统总长（m）</td>
+                            <td id="tunnelTotal">--</td>
+                            <td>引水+尾水</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="result-item">
+                    <h3>四、电气与电网参数</h3>
+                    <table class="table-result">
+                        <tr>
+                            <th>参数名称</th>
+                            <th>数值</th>
+                            <th>备注</th>
+                        </tr>
+                        <tr>
+                            <td>总装机容量（MW）</td>
+                            <td id="elecTotalPower">--</td>
+                            <td>立轴混流可逆式机组</td>
+                        </tr>
+                        <tr>
+                            <td>出线电压等级（kV）</td>
+                            <td id="voltageLevel">--</td>
+                            <td>接入省级主网</td>
+                        </tr>
+                        <tr>
+                            <td>年发电量（亿kWh）</td>
+                            <td id="annualPower">--</td>
+                            <td>按年利用小时数计算</td>
+                        </tr>
+                        <tr>
+                            <td>年抽水电量（亿kWh）</td>
+                            <td id="pumpPower">--</td>
+                            <td>按综合效率计算</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 核心计算函数
+        function calculate() {
+            // 1. 获取输入参数
+            const unitNum = parseInt(document.getElementById('unitNum').value); // 机组台数
+            const unitPower = parseFloat(document.getElementById('unitPower').value); // 单机容量(MW)
+            const turbineEta = parseFloat(document.getElementById('turbineEta').value); // 水轮机效率
+            const ratedHead = parseFloat(document.getElementById('ratedHead').value); // 额定水头(m)
+            const generateHour = parseFloat(document.getElementById('generateHour').value); // 日发电小时数(h)
+            const headLoss = parseFloat(document.getElementById('headLoss').value) / 100; // 水头损失(%)
+            const tunnelVelocity = parseFloat(document.getElementById('tunnelVelocity').value); // 隧洞流速(m/s)
+            const comprehensiveEta = parseFloat(document.getElementById('comprehensiveEta').value) / 100; // 综合效率(%)
+            const annualUseHour = parseFloat(document.getElementById('annualUseHour').value); // 年利用小时数(h)
+
+            // 2. 装机容量与流量计算
+            const totalPower = unitNum * unitPower; // 总装机容量(MW)
+            const unitFlow = (unitPower * 1000000) / (9.81 * turbineEta * ratedHead); // 单机额定流量(m³/s)
+            const totalFlow = unitNum * unitFlow; // 总发电流量(m³/s)
+
+            // 3. 水库参数计算
+            const effectiveCapacity = (totalFlow * generateHour * 3600) / 10000; // 有效库容(万m³)
+            const upperEffective = Math.round(effectiveCapacity); // 上库有效库容(取整)
+            const lowerEffective = Math.round(effectiveCapacity); // 下库有效库容(取整)
+            const upperTotal = Math.round(upperEffective * 1.14); // 上库总库容(有效×1.14)
+            const lowerTotal = Math.round(lowerEffective * 1.24); // 下库总库容(有效×1.24)
+
+            // 水位拟定（贴合额定水头200m，可根据实际调整）
+            const upperNormal = 580.00; // 上库正常蓄水位(m)
+            const upperDead = 555.00; // 上库死水位(m)
+            const lowerNormal = 380.00; // 下库正常蓄水位(m)
+            const lowerDead = 355.00; // 下库死水位(m)
+
+            // 坝高拟定
+            const upperDam = 95; // 上库最大坝高(m)
+            const lowerDam = 45; // 下库最大坝高(m)
+
+            // 4. 输水系统参数计算
+            const maxHeadRaw = (upperNormal - lowerDead) * (1 - headLoss); // 最大发电水头(未取整)
+            const maxHead = Math.round(maxHeadRaw / 5) * 5; // 取整为5的倍数，预留设计余量
+            const minHeadRaw = (upperDead - lowerNormal) * (1 - headLoss); // 最小发电水头(未取整)
+            const minHead = Math.round(minHeadRaw / 5) * 5; // 取整为5的倍数，预留设计余量
+            const mainTunnel = Math.round((Math.sqrt((4 * totalFlow) / (Math.PI * tunnelVelocity)) + 0.15) * 2) / 2; // 主洞直径(取0.5倍数)
+            const branchTunnel = 4.5; // 支管直径(固定，对应单机流量)
+            const tunnelTotal = 1700; // 输水系统总长(m，参考同类电站)
+
+            // 5. 电气与电网参数计算
+            const elecTotalPower = totalPower; // 总装机容量(MW)
+            const voltageLevel = 500; // 出线电压等级(kV，1200MW级标准)
+            const annualPower = (elecTotalPower * annualUseHour) / 10000; // 年发电量(亿kWh)
+            const pumpPower = annualPower / comprehensiveEta; // 年抽水电量(亿kWh)
+
+            // 6. 赋值到页面
+            // 装机与流量
+            document.getElementById('totalPower').textContent = totalPower.toFixed(0);
+            document.getElementById('unitFlow').textContent = unitFlow.toFixed(1);
+            document.getElementById('totalFlow').textContent = totalFlow.toFixed(1);
+
+            // 水库参数
+            document.getElementById('upperEffective').textContent = upperEffective;
+            document.getElementById('lowerEffective').textContent = lowerEffective;
+            document.getElementById('upperTotal').textContent = upperTotal;
+            document.getElementById('lowerTotal').textContent = lowerTotal;
+            document.getElementById('upperNormal').textContent = upperNormal.toFixed(2);
+            document.getElementById('lowerNormal').textContent = lowerNormal.toFixed(2);
+            document.getElementById('upperDead').textContent = upperDead.toFixed(2);
+            document.getElementById('lowerDead').textContent = lowerDead.toFixed(2);
+            document.getElementById('upperDam').textContent = upperDam;
+            document.getElementById('lowerDam').textContent = lowerDam;
+
+            // 输水系统参数
+            document.getElementById('calRatedHead').textContent = ratedHead.toFixed(1);
+            document.getElementById('maxHead').textContent = maxHead.toFixed(0);
+            document.getElementById('minHead').textContent = minHead.toFixed(0);
+            document.getElementById('mainTunnel').textContent = mainTunnel.toFixed(1);
+            document.getElementById('branchTunnel').textContent = branchTunnel.toFixed(1);
+            document.getElementById('tunnelTotal').textContent = tunnelTotal;
+
+            // 电气参数
+            document.getElementById('elecTotalPower').textContent = elecTotalPower.toFixed(0) + ' (' + unitNum + '×' + unitPower + ')';
+            document.getElementById('voltageLevel').textContent = voltageLevel;
+            document.getElementById('annualPower').textContent = annualPower.toFixed(1);
+            document.getElementById('pumpPower').textContent = pumpPower.toFixed(1);
+        }
+
+        // 页面加载完成后自动计算一次
+        window.onload = function() {
+            calculate();
+        };
+    </script>
+</body>
+</html>
